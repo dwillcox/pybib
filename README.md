@@ -12,11 +12,15 @@ pybib then queries the NASA ADS to lookup the articles, generate a
 bibcode, and save the bibtex files corresponding to the PDF's as
 [bibcode].bib.
 
-## Example:
+## Examples:
+
+### Generate Bibtex files for a.pdf, b.pdf, and c.pdf
 
 ```
 $ python pybib.py a.pdf b.pdf c.pdf
 ```
+
+### Generate Bibtex files for all PDF's in an arbitrary directory. The Bibtex files will be written to the current directory.
 
 ```
 $ python pybib.py ~/library/articles/*.pdf
@@ -27,16 +31,23 @@ $ python pybib.py ~/library/articles/*.pdf
 
 If the option --catbib is used, pybib will perform the above (if no
 PDF's are given it will skip those steps) and then glob a set of all
-*.bib files in the working directory, open them, and concatenate them,
+*.bib files in the current directory, open them, and concatenate them,
 detecting and eliminating duplicates via their DOI numbers. The
 argument to --catbib sets the name of the master bibliography thus
 generated.
 
-## Example:
+## Examples:
+
+### Generate master.bib from all the Bibtex files in the current
+    directory
 
 ```
 $ python pybib.py --catbib master.bib
 ```
+
+### Generate Bibtex from all the PDF's in the current directory and
+    then write master.bib. (Argument order can be reversed with the
+    same effect.)
 
 ```
 $ python pybib.py *.pdf --catbib master.bib
