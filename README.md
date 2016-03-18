@@ -38,16 +38,13 @@ generated.
 
 ## Examples:
 
-### Generate master.bib from all the Bibtex files in the current
-    directory
+### Generate master.bib from all the Bibtex files in the current directory
 
 ```
 $ python pybib.py --catbib master.bib
 ```
 
-### Generate Bibtex from all the PDF's in the current directory and
-    then write master.bib. (Argument order can be reversed with the
-    same effect.)
+### Generate Bibtex from all the PDF's in the current directory and then write master.bib. (Argument order can be reversed with the same effect.)
 
 ```
 $ python pybib.py *.pdf --catbib master.bib
