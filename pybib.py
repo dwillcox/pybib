@@ -330,6 +330,7 @@ if __name__=='__main__':
             for d in dc.documents:
                 d.save_bibtex()
             print('--------------------------------------------------------------------------------')
+            
     # Make a master bibliography file
     if args.catbib:
         # Find all .bib files
