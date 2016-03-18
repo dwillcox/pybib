@@ -104,9 +104,7 @@ Verified to work with recent articles in the following journals:
 
 # Dependencies
 
-pybib requires:
+* python ads module [https://pypi.python.org/pypi/ads]
 
-* python ads module
-
-* pdfgrep v.1.4.1
+* pdfgrep v.1.4.1 [https://pdfgrep.org]
 
