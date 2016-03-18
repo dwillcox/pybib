@@ -6,31 +6,51 @@ Author: Donald E. Willcox
 pybib is a python-based automatic bibtex generator for PDF's indexed
 in the NASA ADS.
 
-Given a pdf (or list of pdf's), pybib will search it (them) for a DOI
-identifier.
+Given a list of PDF's, pybib will search them for DOI identifiers.
 
-pybib then queries the NASA ADS to lookup the article, generate a
-bibcode, and save the bibtex files corresponding to the pdf's as
+pybib then queries the NASA ADS to lookup the articles, generate a
+bibcode, and save the bibtex files corresponding to the PDF's as
 [bibcode].bib.
+
+## Example:
+
+```
+$ python pybib.py a.pdf b.pdf c.pdf
+```
+
+```
+$ python pybib.py ~/library/articles/*.pdf
+```
 
 
 # --catbib
 
 If the option --catbib is used, pybib will perform the above (if no
-pdf's are given it will skip those steps) and then glob a set of all
+PDF's are given it will skip those steps) and then glob a set of all
 *.bib files in the working directory, open them, and concatenate them,
 detecting and eliminating duplicates via their DOI numbers. The
 argument to --catbib sets the name of the master bibliography thus
 generated.
+
+## Example:
+
+```
+$ python pybib.py --catbib master.bib
+```
+
+```
+$ python pybib.py *.pdf --catbib master.bib
+```
 
 
 # --adstoken
 
 pybib will look in the file '.adstoken' for your ADS access token,
 searching for the file first in the working directory and next in the
-directory where pybib.py is stored. It will read all lines of the
-file, matching the following regular expression and setting
-ads.config.token to group 4 of the match.
+directory where pybib.py is stored.
+
+It will read all lines of the '.adstoken' file, matching the following regular
+expression and setting ads.config.token to group 4 of the match.
 
 ``` (\s*)ads\.config\.token(\s*)=(\s*)(\w*)(\s*)#?.* ```
 
@@ -39,7 +59,22 @@ program will not query the ADS.
 
 To set your ADS token, run pybib with the --adstoken option and supply
 your token as follows. pybib will create a file named '.adstoken' for
-you with your designated token in the directory of pybib.py.
+you with your designated token in the directory of pybib.py. If you've
+cloned a git repo, '.adstoken' is in the .gitignore file so your token
+won't be accidentally committed to git.
+
+If you'd rather create an '.adstoken' file manually in the current
+directory, create it as follows with your token (eg. '01234abcd'):
+
+```
+ads.config.token = 01234abcd # Comments
+```
+
+## Example:
+
+```
+$ python pybib.py --adstoken 'myadstoken'
+```
 
 
 # Supported Journals
