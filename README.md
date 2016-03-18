@@ -14,8 +14,7 @@ bibcode, and save the bibtex files corresponding to the PDF's as
 
 You can make pybib.py executable, and it will execute via ```python``` as
 defined by ```/usr/bin/env python```. This works with the anaconda
-python distribution and is convenient if you also alias ```pybib.py``` to, eg.
-```pybib```
+python distribution and is convenient if you also alias ```pybib.py``` to, eg. ```pybib```
 
 ## Examples:
 
