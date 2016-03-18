@@ -12,6 +12,10 @@ pybib then queries the NASA ADS to lookup the articles, generate a
 bibcode, and save the bibtex files corresponding to the PDF's as
 [bibcode].bib.
 
+You can make pybib.py executable, and it will execute via 'python' as
+defined by ```/usr/bin/env python```. This is convenient if you also alias
+it to, eg. 'pybib'
+
 ## Examples:
 
 ### Generate Bibtex files for a.pdf, b.pdf, and c.pdf

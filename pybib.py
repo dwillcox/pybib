@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Copyright (c) 2016, Donald E. Willcox 
 All rights reserved.
@@ -192,20 +193,26 @@ class Document(object):
         """
         Query ADS for this paper using DOI
         """
-        paper_query = ads.SearchQuery(identifier=self.doi)
-        paper_list = []
-        for p in paper_query:
-            paper_list.append(p)
-        nresults = len(paper_list)
-        if nresults==0:
-            print('ERROR: Could not find paper on ADS with DOI {} for paper {}'.format(self.doi, self.name))
-        elif nresults==1:
-            self.paper = paper_list[0]
-        else:
-            print('ERROR: Found {} results on ADS with DOI {} for paper {}:'.format(nresults, self.doi, self.name))
-            for p in paper_list:
-                print(p.bibtex)
-                print('-----')
+        try:
+            paper_query = ads.SearchQuery(identifier=self.doi)
+            paper_list = []
+            for p in paper_query:
+                paper_list.append(p)
+            nresults = len(paper_list)
+            if nresults==0:
+                print('ERROR: Could not find paper on ADS with DOI {} for paper {}'.format(self.doi, self.name))
+            elif nresults==1:
+                self.paper = paper_list[0]
+                self.bibtex = self.paper.bibtex
+            else:
+                print('ERROR: Found {} results on ADS with DOI {} for paper {}:'.format(nresults, self.doi, self.name))
+                for p in paper_list:
+                    print(p.bibtex)
+                    print('-----')
+        except ads.exceptions.APIResponseError:
+            print('ERROR: ADS APIResponseError. You probably exceeded your rate limit.')
+            self.paper = None
+            pass
 
     def save_bibtex(self):
         """
@@ -214,7 +221,7 @@ class Document(object):
         if self.paper:
             # Add file link to bibtex
             file_type = 'PDF'
-            bibtex_ads = self.paper.bibtex
+            bibtex_ads = self.bibtex
             file_bibtex_string = ':{}:{}'.format(self.name, file_type)
             file_bibtex_string = '{' + file_bibtex_string + '}'
             file_bibtex_string = ',\n     File = {}'.format(file_bibtex_string)
