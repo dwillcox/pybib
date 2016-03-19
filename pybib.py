@@ -56,21 +56,39 @@ class BibtexEntry(object):
     def __init__(self, entry):
         self.lines = entry # entry is a list of bibtex lines
         self.doi   = u''
-        self.getdoi()
+        self.bibcode = u''
+        self.get_doi()
+        self.get_bibcode()
 
     def __repr__(self):
-        return self.doi
+        return self.bibcode
         
-    def getdoi(self):
+    def get_doi(self):
         """
         sets BibtexEntry.doi = DOI for this BibtexEntry
         """
-        re_doi = re.compile(u'\s*doi\s*=\s*\{(.*)\}.*', re.IGNORECASE)
+        re_doi = u'\s*doi\s*=\s*\{(.*)\}.*'
+        self.doi = self.search_re_lines(re_doi)
+
+    def get_bibcode(self):
+        """
+        sets BibtexEntry.bibcode = bibcode for this BibtexEntry
+        """
+        re_bibcode = u'@[^\{]*\{([^,]*),.*'
+        self.bibcode = self.search_re_lines(re_bibcode)
+
+    def search_re_lines(self, regexp):
+        """
+        Searches self.lines for re, returning group(1) 
+        of the match, if found. Otherwise returns an empty string.
+        """
+        rec = re.compile(regexp, re.IGNORECASE)
         for l in self.lines:
-            m_doi = re_doi.match(l)
-            if m_doi:
-                self.doi = m_doi.group(1)
-                return
+            rem = rec.match(l)
+            if rem:
+                return rem.group(1)
+            else:
+                return ''
     
 class BibtexCollection(object):
     """
@@ -79,7 +97,7 @@ class BibtexCollection(object):
     """
     def __init__(self, bibtexfiles, bibtexoutput=None):
         self.bib_files = {} # filename is key, list of BibtexEntry is value
-        self.doi_entries = {} # Dictionary of BibtexEntry objects keyed by DOI
+        self.bibcode_entries = {} # Dictionary of BibtexEntry objects keyed by bibcode
         self.outfile = bibtexoutput
         
         for f in bibtexfiles:
@@ -94,9 +112,10 @@ class BibtexCollection(object):
             self.bib_files[f] = self.get_entries(lines)
 
         print('Found {} bibtex files'.format(len(self.bib_files)))
-        # Gets a unique set of BibtexEntry objects by DOI
+        # Gets a unique set of BibtexEntry objects by bibcode
         self.make_unique_entries()
-        print('Found {} unique bibtex entries'.format(len(self.doi_entries)))
+        print('Found {} unique bibtex entries'.format(len(self.bibcode_entries)))
+        print(self.bibcode_entries)
 
         # Write the master Bibtex file
         if self.outfile:
@@ -108,7 +127,7 @@ class BibtexCollection(object):
         Writes unique entries into a master Bibtex file
         """
         f = codecs.open(outfile, encoding='utf-8', mode='w')
-        for doi, entry in self.doi_entries.iteritems():
+        for bc, entry in self.bibcode_entries.iteritems():
             for l in entry.lines:
                 f.write(l)
             f.write(u'\n\n')
@@ -116,13 +135,13 @@ class BibtexCollection(object):
         
     def make_unique_entries(self):
         """
-        Makes a list of unique BibtexEntry objects keyed by DOI
+        Makes a list of unique BibtexEntry objects keyed by bibcode
         """
         for f, belist in self.bib_files.iteritems():
             for be in belist:
-                if be.doi in self.doi_entries.keys():
-                    print('Duplicate DOI {} - Continuing with replacement ...'.format(be.doi))
-                self.doi_entries[be.doi] = be
+                if be.bibcode in self.bibcode_entries.keys():
+                    print('Duplicate bibcode {} - Continuing with replacement ...'.format(be.doi))
+                self.bibcode_entries[be.bibcode] = be
             
     def get_entries(self, lines):
         """
@@ -163,11 +182,21 @@ class Document(object):
         self.name = file
         
         self.doi = ''
-        self.get_doi()
-
+        self.arxiv = ''
         self.paper = None
+        
+        # Try to get DOI
+        self.get_doi()
+        if not self.doi:
+            # Try to get arXiv number if no DOI
+            self.get_arxiv()
+                
         if self.doi:
-            self.query_ads()
+            self.query_ads({'identifier':self.doi})
+        elif self.arxiv:
+            self.query_ads({'identifier':self.arxiv})
+        else:
+            print('Cannot find {} in ADS with no identifier.'.format(self.name))
 
     def get_doi(self):
         """
@@ -175,11 +204,7 @@ class Document(object):
         Sets: self.doi
         """
         pdfgrep_doi_re = r'''"doi\s*:\s*[^ "'\n'"]*"'''
-        pdfgrep_call = subprocess.Popen("pdfgrep -i -o -P " + pdfgrep_doi_re + ' ' + self.name,
-                                        shell=True,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE)
-        pdfgrep_stdout, pdfgrep_err = pdfgrep_call.communicate()
+        pdfgrep_stdout, pdfgrep_stderr = self.call_pdfgrep(pdfgrep_doi_re)
         re_doi = re.compile('(\s*)doi(\s*):(\s*)([^\s\n]*)', re.IGNORECASE)
         m = re_doi.match(pdfgrep_stdout)
         if m:
@@ -189,23 +214,53 @@ class Document(object):
         else:
             print('Could not find DOI in {}'.format(self.name))
 
-    def query_ads(self):
+    def get_arxiv(self):
         """
-        Query ADS for this paper using DOI
+        Gets arXiv identifier from the file.
+        Sets: self.arxiv
+        """
+        pdfgrep_arx_re = r'''"arXiv:[0-9\.]+v?[0-9]* \[[a-zA-Z-\.]+\] [0-9]{1,2} [a-zA-Z]+ [0-9]{4}"'''
+        pdfgrep_stdout, pdfgrep_stderr = self.call_pdfgrep(pdfgrep_arx_re)
+        re_arx = re.compile('(arXiv:[0-9\.]+).*', re.IGNORECASE)
+        m_arxiv = re_arx.match(pdfgrep_stdout)
+        if m_arxiv:
+            self.arxiv = m_arxiv.group(1)
+        if self.arxiv:
+            print('Found arXiv ID {} in {}'.format(self.arxiv, self.name))
+        else:
+            print('Could not find arXiv ID in {}'.format(self.name))
+
+    def call_pdfgrep(self, pdfgrep_re):
+        """
+        Calls pdfgrep with regular expression pdfgrep_re (case insensitive)
+        Returns a tuple corresponding to pdfgrep's (STDOUT, STDERR)
+        """
+        pdfgrep_call = subprocess.Popen("pdfgrep -i -o -P " + pdfgrep_re +
+                                        ' ' + self.name,
+                                        shell=True,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE)
+        pdfgrep_stdout, pdfgrep_err = pdfgrep_call.communicate()
+        return (pdfgrep_stdout, pdfgrep_err)
+            
+    def query_ads(self, query):
+        """
+        Query ADS for this paper
+        Uses the dictionary query keyed by argument name expected by ads.SearchQuery
         """
         try:
-            paper_query = ads.SearchQuery(identifier=self.doi)
+            paper_query = ads.SearchQuery(**query)
             paper_list = []
             for p in paper_query:
                 paper_list.append(p)
             nresults = len(paper_list)
             if nresults==0:
-                print('ERROR: Could not find paper on ADS with DOI {} for paper {}'.format(self.doi, self.name))
+                print('ERROR: Could not find paper on ADS with query {} for paper {}'.format(query, self.name))
             elif nresults==1:
                 self.paper = paper_list[0]
                 self.bibtex = self.paper.bibtex
             else:
-                print('ERROR: Found {} results on ADS with DOI {} for paper {}:'.format(nresults, self.doi, self.name))
+                print('ERROR: Found {} results on ADS with query {} for paper {}:'.format(nresults, query, self.name))
                 for p in paper_list:
                     print(p.bibtex)
                     print('-----')

@@ -6,7 +6,7 @@ Author: Donald E. Willcox
 pybib is a python-based automatic bibtex generator for PDF's indexed
 in the NASA ADS.
 
-Given a list of PDF's, pybib will search them for DOI identifiers.
+Given a list of PDF's, pybib will search each of them for it's DOI identifier and arXiv number if a DOI is not present.
 
 pybib then queries the NASA ADS to lookup the articles, generate a
 bibcode, and save the bibtex files corresponding to the PDF's as
@@ -36,7 +36,7 @@ $ python pybib.py ~/library/articles/*.pdf
 If the option --catbib is used, pybib will perform the above (if no
 PDF's are given it will skip those steps) and then glob a set of all
 *.bib files in the current directory, open them, and concatenate them,
-detecting and eliminating duplicates via their DOI numbers. The
+detecting and eliminating duplicates via their bibcodes. The
 argument to --catbib sets the name of the master bibliography thus
 generated.
 
@@ -89,9 +89,11 @@ $ python pybib.py --adstoken 'myadstoken'
 ```
 
 
-# Supported Journals
+# Supported Journals/Databases
 
-Verified to work with recent articles in the following journals:
+Verified to work with recent articles in the following:
+
+* arXiv
 
 * ApJ
 
@@ -104,6 +106,7 @@ Verified to work with recent articles in the following journals:
 * Phys. Rev. D
 
 * Phys. Rev. C
+
 
 
 # Dependencies
