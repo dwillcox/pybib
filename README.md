@@ -85,7 +85,7 @@ ads.config.token = 01234abcd # Comments
 ## Example:
 
 ```
-$ python pybib.py --adstoken 'myadstoken'
+$ python pybib.py --adstoken '01234abcd'
 ```
 
 
