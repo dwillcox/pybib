@@ -203,7 +203,7 @@ class Document(object):
         Gets DOI identifier from the file.
         Sets: self.doi
         """
-        pdfgrep_doi_re = r'''"doi\s*:\s*[^ "'\n'"]*"'''
+        pdfgrep_doi_re = "doi\s*:\s*[^ \"'\n'\"]*"
         pdfgrep_stdout, pdfgrep_stderr = self.call_pdfgrep(pdfgrep_doi_re)
         re_doi = re.compile('(\s*)doi(\s*):(\s*)([^\s\n]*)', re.IGNORECASE)
         m = re_doi.match(pdfgrep_stdout)
@@ -219,7 +219,7 @@ class Document(object):
         Gets arXiv identifier from the file.
         Sets: self.arxiv
         """
-        pdfgrep_arx_re = r'''"arXiv:[0-9\.]+v?[0-9]* \[[a-zA-Z-\.]+\] [0-9]{1,2} [a-zA-Z]+ [0-9]{4}"'''
+        pdfgrep_arx_re = "arXiv:[0-9\.]+v?[0-9]* \[[a-zA-Z-\.]+\] [0-9]{1,2} [a-zA-Z]+ [0-9]{4}"
         pdfgrep_stdout, pdfgrep_stderr = self.call_pdfgrep(pdfgrep_arx_re)
         re_arx = re.compile('(arXiv:[0-9\.]+).*', re.IGNORECASE)
         m_arxiv = re_arx.match(pdfgrep_stdout)
@@ -235,9 +235,10 @@ class Document(object):
         Calls pdfgrep with regular expression pdfgrep_re (case insensitive)
         Returns a tuple corresponding to pdfgrep's (STDOUT, STDERR)
         """
-        pdfgrep_call = subprocess.Popen("pdfgrep -i -o -P " + pdfgrep_re +
-                                        ' ' + self.name,
-                                        shell=True,
+        pdfgrep_call = subprocess.Popen(["pdfgrep", "-ioP",
+                                         pdfgrep_re,
+                                         self.name],
+                                        shell=False,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE)
         pdfgrep_stdout, pdfgrep_err = pdfgrep_call.communicate()
