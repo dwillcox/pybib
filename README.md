@@ -69,6 +69,14 @@ expression and setting ads.config.token to group 4 of the match.
 If you don't have an ADS token stored, you will be warned and the
 program will not query the ADS.
 
+To create an ADS token:
+
+* Create an account at [https://ui.adsabs.harvard.edu]
+
+* Go to Account > Customize Settings > API Token
+
+* ``Generate a new key''
+
 To set your ADS token, run pybib with the --adstoken option and supply
 your token as follows. pybib will create a file named '.adstoken' for
 you with your designated token in the directory of pybib.py. If you've
