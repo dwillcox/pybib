@@ -204,7 +204,7 @@ class Document(object):
         Sets: self.doi
         """
         pdfgrep_doi_re = "doi\s*:\s*[^ \"'\n'\"]*"
-        pdfgrep_stdout, pdfgrep_stderr = self.call_pdfgrep(pdfgrep_doi_re)
+        pdfgrep_stdout = self.call_pdfgrep(pdfgrep_doi_re)
         re_doi = re.compile('(\s*)doi(\s*):(\s*)([^\s\n]*)', re.IGNORECASE)
         m = re_doi.match(pdfgrep_stdout)
         if m:
@@ -220,7 +220,7 @@ class Document(object):
         Sets: self.arxiv
         """
         pdfgrep_arx_re = "arXiv:[0-9\.]+v?[0-9]* \[[a-zA-Z-\.]+\] [0-9]{1,2} [a-zA-Z]+ [0-9]{4}"
-        pdfgrep_stdout, pdfgrep_stderr = self.call_pdfgrep(pdfgrep_arx_re)
+        pdfgrep_stdout = self.call_pdfgrep(pdfgrep_arx_re)
         re_arx = re.compile('(arXiv:[0-9\.]+).*', re.IGNORECASE)
         m_arxiv = re_arx.match(pdfgrep_stdout)
         if m_arxiv:
@@ -242,7 +242,12 @@ class Document(object):
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE)
         pdfgrep_stdout, pdfgrep_err = pdfgrep_call.communicate()
-        return (pdfgrep_stdout, pdfgrep_err)
+        if pdfgrep_err:
+            print('Error in function call_pdfgrep returned from subprocess.Popen:')
+            print(pdfgrep_err)
+            exit()
+        else:
+            return pdfgrep_stdout
             
     def query_ads(self, query):
         """
