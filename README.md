@@ -148,11 +148,11 @@ To see your current rate limit, usage, and UTC reset times, use the following:
 (Searches)
 
 ```
-curl -v -H "Authorization: Bearer [your ads token]" 'https://api.adsabs.harvard.edu/v1/search/query?q=star'
+$ curl -v -H "Authorization: Bearer [your ads token]" 'https://api.adsabs.harvard.edu/v1/search/query?q=star'
 ```
 
 (Bibtex Export)
 
 ```
-curl -v -H "Authorization: Bearer [your ads token]" 'https://api.adsabs.harvard.edu/v1/export/bibtex'
+$ curl -v -H "Authorization: Bearer [your ads token]" 'https://api.adsabs.harvard.edu/v1/export/bibtex'
 ```
