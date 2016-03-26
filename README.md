@@ -33,6 +33,7 @@ $ python pybib.py ~/library/articles/*.pdf
 ```
 
 
+
 # --catbib
 
 If the option --catbib is used, pybib will perform the above (if no
@@ -57,6 +58,7 @@ $ python pybib.py --catbib master.bib
 ```
 $ python pybib.py *.pdf --catbib master.bib
 ```
+
 
 
 # --adstoken
@@ -101,6 +103,7 @@ $ python pybib.py --adstoken '01234abcd'
 ```
 
 
+
 # Supported Journals/Databases
 
 Verified to work with recent articles in the following:
@@ -128,6 +131,7 @@ Verified to work with recent articles in the following:
 * pdfgrep v.1.4.1 [https://pdfgrep.org]
 
 
+
 # Note on the ADS API Rate Limits
 
 The ADS API imposes rate limits for different services they provide. While the daily search rate limit is 5000 requests, the daily bibtex export limit is only 100 requests. This means that if you use pybib to query the ADS for more than 100 articles/day, you'll get an APIResponseError which says 'Rate limit was exceeded'.
@@ -153,3 +157,11 @@ $ curl -v -H "Authorization: Bearer [your ads token]" 'https://api.adsabs.harvar
 ```
 $ curl -v -H "Authorization: Bearer [your ads token]" 'https://api.adsabs.harvard.edu/v1/export/bibtex'
 ```
+
+
+
+# License
+
+Copyright (c) 2016, Donald E. Willcox
+
+pybib is made openly available under the BSD 3-clause license. For details, see the LICENSE file.
