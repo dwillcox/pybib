@@ -53,7 +53,7 @@ generated.
 $ python pybib.py --catbib master.bib
 ```
 
-### Generate Bibtex from all the PDF's in the current directory and then write master.bib
+### Generate Bibtex from PDF's first then construct master.bib
 
 (Argument order can be reversed with the same effect.)
 
