@@ -27,7 +27,9 @@ convenient if you alias ```pybib.py``` to, eg. ```pybib```.
 $ python pybib.py a.pdf b.pdf c.pdf
 ```
 
-### Generate Bibtex files for all PDF's in an arbitrary directory. The Bibtex files will be written to the current directory.
+### Generate Bibtex files for all PDF's in an arbitrary directory.
+
+The Bibtex files will be written to the current directory and the bibtex 'File' attribute will consist of the relative path of the corresponding PDF.
 
 ```
 $ python pybib.py ~/library/articles/*.pdf
@@ -51,7 +53,9 @@ generated.
 $ python pybib.py --catbib master.bib
 ```
 
-### Generate Bibtex from all the PDF's in the current directory and then write master.bib. (Argument order can be reversed with the same effect.)
+### Generate Bibtex from all the PDF's in the current directory and then write master.bib
+
+(Argument order can be reversed with the same effect.)
 
 ```
 $ python pybib.py *.pdf --catbib master.bib
