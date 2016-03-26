@@ -6,15 +6,19 @@ Author: Donald E. Willcox
 pybib is a python-based automatic bibtex generator for PDF's indexed
 in the NASA ADS.
 
-Given a list of PDF's, pybib will search each of them for it's DOI identifier and arXiv number if a DOI is not present.
+Given a list of PDF's, pybib will search each of them for its DOI
+identifier and arXiv number if a DOI is not present. Searches are made
+via subprocess.Popen calls to pdfgrep.
 
 pybib then queries the NASA ADS to lookup the articles, generate a
 bibcode, and save the bibtex files corresponding to the PDF's as
 [bibcode].bib.
 
-You can make pybib.py executable, and it will execute via ```python``` as
-defined by ```/usr/bin/env python```. This works with the anaconda
-python distribution and is convenient if you also alias ```pybib.py``` to, eg. ```pybib```
+You can make pybib.py executable, and it will execute via ```python```
+as defined by ```/usr/bin/env python```. This works with the anaconda
+python distribution or your distribution's python packages and is
+convenient if you also alias ```pybib.py``` to, eg. ```pybib``` and
+make it executable.
 
 ## Examples:
 
