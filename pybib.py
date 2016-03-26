@@ -273,7 +273,7 @@ class Document(object):
         except ads.exceptions.APIResponseError:
             print('ERROR: ADS APIResponseError. You probably exceeded your rate limit.')
             self.paper = None
-            pass
+            raise
 
     def save_bibtex(self):
         """

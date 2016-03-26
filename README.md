@@ -123,3 +123,15 @@ Verified to work with recent articles in the following:
 
 * pdfgrep v.1.4.1 [https://pdfgrep.org]
 
+
+# Note on the ADS API Rate Limits
+
+The ADS API imposes rate limits for different services they provide. While the daily search rate limit is 5000 requests, the daily bibtex export limit is only 100 requests. This means that if you use pybib to query the ADS for more than 100 articles/day, you'll get an APIResponseError which says 'Rate limit was exceeded'.
+
+For day-to-day use making bibtex for downloaded articles, this isn't a severe problem. pybib will still concatenate your bibtex together with your 'master' bibtex file just fine using the --catbib option.
+
+However, if you have a large collection of articles for which you would like to create a bibliography there are two options for you:
+
+* Break the collection up into sets of 100 articles and process one set per day
+
+* Contact the ADS staff directly and request increased rate limits via ```adshelp@cfa.harvard.edu```
