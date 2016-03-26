@@ -1,6 +1,3 @@
-Author: Donald E. Willcox
-
-
 # pybib Overview
 
 pybib is a python-based automatic bibtex generator for PDF's indexed
