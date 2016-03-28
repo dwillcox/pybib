@@ -134,15 +134,9 @@ Verified to work with recent articles in the following:
 
 # Note on the ADS API Rate Limits
 
-The ADS API imposes rate limits for different services they provide. While the daily search rate limit is 5000 requests, the daily bibtex export limit is only 100 requests. This means that if you use pybib to query the ADS for more than 100 articles/day, you'll get an APIResponseError which says 'Rate limit was exceeded'.
+The ADS API imposes rate limits for different services they provide. While the daily search rate limit is 5000 requests, the daily bibtex export limit is only 100 requests. This means that if you use pybib to query the ADS for articles more than 100 times/day, you'll get an APIResponseError which says 'Rate limit was exceeded'. NOTE, however, that you CAN process more than 100 articles every time you use pybib because pybib will send all their bibcodes to the bibtex export service in just 1 bibtex export request.
 
-For day-to-day use making bibtex for <100 new downloaded articles, this isn't a problem. pybib will still concatenate your bibtex together with your 'master' bibtex file just fine using the --catbib option.
-
-However, if you have a large collection of articles for which you would like to create a bibliography there are two options:
-
-* Break the collection up into sets of <100 articles and process one set per day (eg. via a cron job)
-
-* Contact the ADS staff directly and request an increased bibtex export limit via ```adshelp@cfa.harvard.edu```
+If this is a problem you can contact the ADS staff directly and request an increased bibtex export limit via ```adshelp@cfa.harvard.edu```
 
 To see your current rate limit, usage, and UTC reset times, use the following:
 

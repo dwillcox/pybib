@@ -95,11 +95,24 @@ class BibtexCollection(object):
     Holds a set of bibtex files, each of which can have multiple
     entries
     """
-    def __init__(self, bibtexfiles, bibtexoutput=None):
+    def __init__(self):
         self.bib_files = {} # filename is key, list of BibtexEntry is value
         self.bibcode_entries = {} # Dictionary of BibtexEntry objects keyed by bibcode
-        self.outfile = bibtexoutput
-        
+
+    def read_from_string(self, bibtex_string):
+        bibtex_lines = bibtex_string.split(u'\n')
+        for bl in bibtex_lines:
+            bl = bl + u'\n'
+        self.read_from_lines(bibtex_lines)
+
+    def read_from_lines(self, bibtexlines):
+        self.bib_files["bibtexlines"] = self.get_entries(bibtexlines)
+        self.make_unique_entries()
+
+    def read_from_files(self, bibtexfiles):
+        """
+        Make a BibtexCollection given a list of input files.
+        """
         for f in bibtexfiles:
             # Open and read f
             fbib = codecs.open(f, encoding='utf-8')
@@ -110,23 +123,18 @@ class BibtexCollection(object):
 
             # Turn lines into a list of BibtexEntry objects
             self.bib_files[f] = self.get_entries(lines)
-
         print('Found {} bibtex files'.format(len(self.bib_files)))
         # Gets a unique set of BibtexEntry objects by bibcode
         self.make_unique_entries()
         print('Found {} unique bibtex entries'.format(len(self.bibcode_entries)))
         print(self.bibcode_entries)
 
-        # Write the master Bibtex file
-        if self.outfile:
-            self.write_unique_entries(self.outfile)
-            print('Wrote {}'.format(self.outfile))
-
     def write_unique_entries(self, outfile):
         """
         Writes unique entries into a master Bibtex file
         """
-        f = codecs.open(outfile, encoding='utf-8', mode='w')
+        self.outfile = outfile
+        f = codecs.open(self.outfile, encoding='utf-8', mode='w')
         for bc, entry in self.bibcode_entries.iteritems():
             for l in entry.lines:
                 f.write(l)
@@ -184,17 +192,20 @@ class Document(object):
         self.doi = ''
         self.arxiv = ''
         self.paper = None
+        self.bibcode = None
+        self.bibtex = None
         
         # Try to get DOI
         self.get_doi()
         if not self.doi:
             # Try to get arXiv number if no DOI
             self.get_arxiv()
-                
+
+        # Get bibcode for this paper
         if self.doi:
-            self.query_ads({'identifier':self.doi})
+            self.query_ads_bibcode({'identifier':self.doi})
         elif self.arxiv:
-            self.query_ads({'identifier':self.arxiv})
+            self.query_ads_bibcode({'identifier':self.arxiv})
         else:
             print('Cannot find {} in ADS with no identifier.'.format(self.name))
 
@@ -248,10 +259,10 @@ class Document(object):
             exit()
         else:
             return pdfgrep_stdout
-            
-    def query_ads(self, query):
+
+    def query_ads_bibcode(self, query):
         """
-        Query ADS for this paper
+        Query ADS for this paper's bibcode
         Uses the dictionary query keyed by argument name expected by ads.SearchQuery
         """
         try:
@@ -264,17 +275,23 @@ class Document(object):
                 print('ERROR: Could not find paper on ADS with query {} for paper {}'.format(query, self.name))
             elif nresults==1:
                 self.paper = paper_list[0]
-                self.bibtex = self.paper.bibtex
+                self.bibcode = self.paper.bibcode
             else:
                 print('ERROR: Found {} results on ADS with query {} for paper {}:'.format(nresults, query, self.name))
                 for p in paper_list:
-                    print(p.bibtex)
+                    print(p.bibcode)
                     print('-----')
         except ads.exceptions.APIResponseError:
             print('ERROR: ADS APIResponseError. You probably exceeded your rate limit.')
             self.paper = None
             raise
 
+    def bibtex_lines_to_string(self, lines):
+        """
+        Turn Bibtex lines into a single unicode string.
+        """
+        return u'\n'.join(lines) + u'\n\n'
+        
     def save_bibtex(self):
         """
         Save Bibtex for this file
@@ -282,7 +299,7 @@ class Document(object):
         if self.paper:
             # Add file link to bibtex
             file_type = 'PDF'
-            bibtex_ads = self.bibtex
+            bibtex_ads = self.bibtex_lines_to_string(self.bibtex)
             file_bibtex_string = ':{}:{}'.format(self.name, file_type)
             file_bibtex_string = '{' + file_bibtex_string + '}'
             file_bibtex_string = ',\n     File = {}'.format(file_bibtex_string)
@@ -309,6 +326,40 @@ class DocumentCollection(object):
         Initializes DocumentCollection using a list of filenames
         """
         self.documents = [Document(f) for f in files]
+        self.set_document_bibtex()
+
+    def set_document_bibtex(self):
+        """
+        Uses query_ads_bibtex to set bibtex for documents in the collection
+        """
+        bibcodes = [d.bibcode for d in self.documents]
+        bc_ads = self.query_ads_bibtex(bibcodes)
+        for d in self.documents:
+            d.bibtex = bc_ads.bibcode_entries[d.bibcode].lines
+        
+    def query_ads_bibtex(self, bibcodes):
+        """
+        Query ADS for the paper bibtexes specified by a list of bibcodes ('bibcodes')
+        """
+        bc_ads = BibtexCollection()
+        try:
+            bibtex_string = ads.ExportQuery(bibcodes=bibcodes, format='bibtex').execute()
+            bc_ads.read_from_string(bibtex_string)
+            bibcodes_found = bc_ads.bibcode_entries.keys()
+            nresults = len(bibcodes_found)
+            nbibcodes = len(bibcodes)
+            if nresults==nbibcodes:
+                return bc_ads
+            else:
+                print('WARNING: did not retrieve bibtex for {} bibcodes:'.format(nresults-nbibcodes))
+                for bc in bibcodes:
+                    if not bc in bibcodes_found:
+                        print(bc)
+                
+        except ads.exceptions.APIResponseError:
+            print('ERROR: ADS APIResponseError. You probably exceeded your rate limit.')
+            raise
+
 
 class ADSToken(object):
     """
@@ -405,5 +456,7 @@ if __name__=='__main__':
         fbiblist = glob.glob('*.bib')
         
         # Find unique Bibtex entries and write master file
-        bc = BibtexCollection(fbiblist, args.catbib)
+        bc = BibtexCollection()
+        bc.read_from_files(fbiblist)
+        bc.write_unique_entries(args.catbib)
         print('--------------------------------------------------------------------------------')
